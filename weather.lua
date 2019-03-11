@@ -101,7 +101,7 @@ end		--updateClock(e)
 	sceneGroup:insert(pageTitle)
 
 
-	local NoaaTextOpt = {text = "METAR and TAF information is courtesy of Aviation Weather Center - NOAA",
+	local NoaaTextOpt = {text = "METAR and TAF information is courtesy of Aviation Weather Center - NOAA/n" --One line space to button,
 		x = display.contentCenterX,
 		y = display.contentHeight * 0.9,
 		width = display.contentWidth*0.65,
@@ -194,7 +194,7 @@ end
 --	tafAlert = native.showAlert( "TAF", "Do you want to download TAF data file (~ 6 MB)?" , { "Download", "Cancel"}, onDownloadTaf )
 --end
 
-	local optdownloadMetar = {text = "Press the button below to download the latest available WEATHER data",
+	local optdownloadMetar = {text = "Press the button below to download the latest available WEATHER data /n" -- One line space from button,
 				  	x = display.contentCenterX,
 					y=display.contentCenterY * 0.32,
 					width = display.contentWidth*0.50,
@@ -205,7 +205,7 @@ end
 	local downloadMetarText = display.newText( optdownloadMetar )
 	sceneGroup:insert(downloadMetarText)
 
-	local fileSizeOpt = {text = "NOTE: 2 files will be downloaded, with total size about 8 MB.",
+	local fileSizeOpt = {text = "/n NOTE: Two files will be downloaded. (about 8 MB)",
 		x = display.contentCenterX,
 		y=display.contentCenterY * 0.55,
 		width = display.contentWidth*0.65,
@@ -302,7 +302,7 @@ end
 					else
 						local content = file:read'*a'
 						local content_a = string.match( content, string.upper(arptID.text) .. ".-," )
-						if not content_a then content_a = "Airport or METAR not found"
+						if not content_a then content_a = "Airport or METAR not found. Please try again."
 							print("METAR DATA N/A")
 						end --if not content_a
 						metarIs = string.sub(content_a, 1, -2)
@@ -317,7 +317,7 @@ end
 					else
 						local contentTaf = fileTaf:read'*a'
 						local contentTaf_a = string.match( contentTaf, string.upper(arptID.text) .. ".-," )
-						if not contentTaf_a then contentTaf_a = "Airport or TAF not found"
+						if not contentTaf_a then contentTaf_a = "Airport or TAF not found. Please try again."
 							print("TAF DATA N/A")
 						end
 						tafIs = string.sub(contentTaf_a, 1, -2)
