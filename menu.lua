@@ -1,3 +1,6 @@
+-- Main Menu
+-- Better Graphics to be implemented
+
 -- Load the relevant LuaSocket modules
 local globals = require( "globals" )
 local ltn12 = require( "ltn12" )
@@ -16,9 +19,6 @@ local scene = composer.newScene()
 -- the scene is removed entirely (not recycled) via "composer.removeScene()"
 -- -----------------------------------------------------------------------------------
 
--- local function changeScenes()
--- composer.gotoScene( "weather", {effect = "slideLeft", time = 500} )
--- end
 
 local function gotoConversions()
 composer.gotoScene( "conversions", {effect = "slideLeft", time = 500} )
@@ -28,11 +28,6 @@ end
 local function gotoWeather()
 composer.gotoScene( "weather", {effect = "slideLeft", time = 500} )
 print("Scene --> weather")
-end
-
-local function gotoMovingMap()
-composer.gotoScene( "movingMap", {effect = "slideLeft", time = 500} )
-print("Scene --> movingMap")
 end
 
 local function gotoComputations()
@@ -48,11 +43,18 @@ end
 local function openWiki()
 	system.openURL( "https://github.com/airfightergr/Aviation-Apps/wiki" )
 end
+
+local function openTselios()
+	system.openURL( "https://tselios.com" )
+end
+
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
 
--- create()
+-- Create menu page
+
 function scene:create( event )
 
 	local sceneGroup = self.view
@@ -61,16 +63,17 @@ function scene:create( event )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 	sceneGroup:insert(background)
-	local image = display.newImage( "assets/logo.png" , display.contentCenterX, display.contentHeight*0.75)
-	sceneGroup:insert(image)
-	title = display.newText("AVIATOR'S COMPANION", display.contentCenterX, display.contentHeight*0.075,native.newFont( "FMS3000.ttf" , 50 ))
+	local itx_tselios = display.newImage( "assets/logo2.png" , display.contentCenterX, display.contentHeight * 0.85)
+	sceneGroup:insert(itx_tselios)
+	itx_tselios:addEventListener("tap", openTselios)
+	title = display.newText("Aviators's Companion", display.contentCenterX, display.contentHeight * 0.075,native.newFont( "/fonts/Lost_Rock_.otf" , 50 ))
 	title:setFillColor(1,1,1)
 	sceneGroup:insert(title)
 
 	--------------------------------------------------------------------------------
 	--Button Weather
 	--------------------------------------------------------------------------------
-	local buttWeather = display.newImageRect( buttImageSheet, 1, display.contentWidth*0.35, display.contentWidth*0.35)
+	local buttWeather = display.newImageRect( buttImageSheet, 1, display.contentWidth * 0.25, display.contentWidth * 0.25)
 	buttWeather.x = display.contentWidth * 0.25
 	buttWeather.y = display.contentHeight * 0.25
 	sceneGroup:insert(buttWeather)
@@ -79,7 +82,7 @@ function scene:create( event )
 	--------------------------------------------------------------------------------
 	--Button Conversions
 	--------------------------------------------------------------------------------
-	local buttConv = display.newImageRect( buttImageSheet, 2 , display.contentWidth*0.35, display.contentWidth*0.35)
+	local buttConv = display.newImageRect( buttImageSheet, 2 , display.contentWidth * 0.25, display.contentWidth * 0.25)
 	buttConv.x = display.contentWidth * 0.75
 	buttConv.y = display.contentHeight * 0.25
 	sceneGroup:insert(buttConv)
@@ -88,15 +91,16 @@ function scene:create( event )
 	--------------------------------------------------------------------------------
 	--Button Computations
 	--------------------------------------------------------------------------------
-	local buttCompute = display.newImageRect( buttImageSheet, 3 , display.contentWidth*0.35, display.contentWidth*0.35)
+	local buttCompute = display.newImageRect( buttImageSheet, 3 , display.contentWidth * 0.25, display.contentWidth * 0.25)
 	buttCompute.x = display.contentWidth * 0.25
 	buttCompute.y = display.contentHeight * 0.50
 	sceneGroup:insert(buttCompute)
 	buttCompute:addEventListener("tap", gotoComputations)
+	
 	--------------------------------------------------------------------------------
 	--Button Airport Data
 	--------------------------------------------------------------------------------
-	local buttairData = display.newImageRect( buttImageSheet, 4 , display.contentWidth*0.35, display.contentWidth*0.35)
+	local buttairData = display.newImageRect( buttImageSheet, 4 , display.contentWidth * 0.25, display.contentWidth * 0.25)
 	buttairData.x = display.contentWidth * 0.75
 	buttairData.y = display.contentHeight * 0.50
 	sceneGroup:insert(buttairData)
@@ -105,25 +109,21 @@ function scene:create( event )
 	--------------------------------------------------------------------------------
 	--Button Manual
 	--------------------------------------------------------------------------------
-	buttonManual = display.newRoundedRect(display.contentCenterX, display.contentHeight*0.67,
-											display.contentWidth*0.35, display.contentHeight*0.05, 15 )
-	buttonManual:setFillColor(0.9,0.9,0.0)
+	buttonManual = display.newRoundedRect(display.contentCenterX, display.contentHeight * 0.95, display.contentWidth * 0.30, display.contentHeight * 0.03, 15 )
+	buttonManual:setFillColor(0.3,0.8,0.9)
 	sceneGroup:insert(buttonManual)
 
-	buttonManualLabel = display.newText( "Read Manual",  display.contentCenterX, display.contentHeight*0.67, native.newFont( "Helvetica" ,25 ))
+	buttonManualLabel = display.newText( "Read Manual",  display.contentCenterX, display.contentHeight * 0.95, native.newFont( "/fonts/Helvetica-Oblique.ttf" ,20 ))
 	buttonManualLabel:setFillColor(0,0,0)
 	sceneGroup:insert(buttonManualLabel)
 	buttonManualLabel:addEventListener("tap", openWiki)
---------------------------------------------------------------------------------
---TESTS
---------------------------------------------------------------------------------
-local bottomTitle = display.newText( "Do not use in Real Aviation", display.contentCenterX, display.contentHeight * 0.83, native.newFont( "Helvetica" , 20 ))
-	bottomTitle:setFillColor(1,0.2,0.2)
-sceneGroup:insert(bottomTitle)
 
-
-
-
+	--------------------------------------------------------------------------------
+	-- Bottom warning message
+	--------------------------------------------------------------------------------
+	local bottomTitle = display.newText( "Do not use in Real Aviation", display.contentCenterX, display.contentHeight * 0.98, native.newFont( "/fonts/Helvetica-Bold.ttf" , 16 ))
+		bottomTitle:setFillColor(1,0.2,0.2)
+	sceneGroup:insert(bottomTitle)
 
 end --scene:create( event )
 
