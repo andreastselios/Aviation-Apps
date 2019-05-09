@@ -1,11 +1,13 @@
+-- To be fixed 
+-- 1. Only 1st runways is being displayed.
+-- 2. Check if the file is older than 1 month.
+-- 3. Fonts to be fixed
+-- 4. Error handling
 --
--- Created by IntelliJ IDEA.
--- User: airfi
--- Date: 5/3/2019
--- Time: 06:59
--- To change this template use File | Settings | File Templates.
---
-
+-- Airport Information page
+-- Downloads the world airport data from OurAirports.com (2 files Airports & Runways)
+-- Uses ICAO airport code to find the informations from local data (aviator_airports.txt & aviator_runways.txt)
+-- Handles errors while searching
 
 local composer = require( "composer" )
 local helpers = require( "helpers" )
@@ -15,6 +17,8 @@ local scene = composer.newScene()
 -- Code outside of the scene event functions below will only be executed ONCE unless
 -- the scene is removed entirely (not recycled) via "composer.removeScene()"
 -- -----------------------------------------------------------------------------------
+
+-- Decleration of locals
 local bg
 local title
 local buttonMenu
@@ -23,7 +27,7 @@ local percDown
 local percText = ""
 
 local arptID
-local arptDataIs = "Airport Data will be displayed here."
+local arptDataIs = ""
 local arptData = {}
 local rwyDataIs = ""
 local rwyData = {}
@@ -35,10 +39,13 @@ local dheigh = display.contentHeight
 local dwidthC = display.contentCenterX
 local dheighC = display.contentCenterY
 
+local hideButton = 0
 
-local function networkListener( event )   ---Now we need this to display the download progress
+-- Creating the download progress
 
-
+-- networkListener_a is for handling download of Airport data (Just to display the right message, need to be improoved)
+local function networkListener_a( event )
+	
     if ( event.isError ) then
         print( "Network error: ", event.response )
 
@@ -52,11 +59,11 @@ local function networkListener( event )   ---Now we need this to display the dow
 
     elseif ( event.phase == "progress" ) then
         if ( event.bytesEstimated <= 0 ) then
-            print( "Download progress: " .. event.bytesTransferred )
+            print( "Download airports: " .. event.bytesTransferred )
         else
-            print( "Download progress: " .. event.bytesTransferred .. " of estimated: " .. event.bytesEstimated )
-            print( string.format("Download progress: %d%%" , (event.bytesTransferred /event.bytesEstimated)*100 ))
-            percText = string.format("Download progress: %d%%" , (event.bytesTransferred /event.bytesEstimated)*100 )
+            print( "Download airports: " .. event.bytesTransferred .. " of estimated: " .. event.bytesEstimated )
+            print( string.format("Download airports: %d%%" , (event.bytesTransferred /event.bytesEstimated)*100 ))
+            percText = string.format("Download airports: %d%%" , (event.bytesTransferred /event.bytesEstimated)*100 )
             percDown = event.bytesTransferred /event.bytesEstimated
             print(percDown)
         end
@@ -64,60 +71,100 @@ local function networkListener( event )   ---Now we need this to display the dow
     elseif ( event.phase == "ended" ) then
         print( "Download complete, total bytes transferred: " .. event.bytesTransferred )
         print( string.format("Download progress: %d%%" , (event.bytesTransferred /event.bytesEstimated)*100 ))
-        percText = "Download finished"
-    end	--if ( event.isError ) then
+        percText = "Airport data has been downloaded succesfully."
+    end	
 
-end				--networkListener( event )
+end	
 
+-- networkListener_r is for handling download of Runways data (Just to display the right message, need to be improoved)
+local function networkListener_r( event )
+	
+    if ( event.isError ) then
+        print( "Network error: ", event.response )
 
+    elseif ( event.phase == "began" ) then
+        if ( event.bytesEstimated <= 0 ) then
+            print( "Download starting, size unknown" )
+            percText = "Starting Download..."
+        else
+            print( "Download starting, estimated size: " .. event.bytesEstimated )
+        end
 
+    elseif ( event.phase == "progress" ) then
+        if ( event.bytesEstimated <= 0 ) then
+            print( "Download runways: " .. event.bytesTransferred )
+        else
+            print( "Download runways: " .. event.bytesTransferred .. " of estimated: " .. event.bytesEstimated )
+            print( string.format("Download runways: %d%%" , (event.bytesTransferred /event.bytesEstimated)*100 ))
+            percText = string.format("Download runways: %d%%" , (event.bytesTransferred /event.bytesEstimated)*100 )
+            percDown = event.bytesTransferred /event.bytesEstimated
+            print(percDown)
+        end
 
+    elseif ( event.phase == "ended" ) then
+        print( "Download complete, total bytes transferred: " .. event.bytesTransferred )
+        print( string.format("Download progress: %d%%" , (event.bytesTransferred /event.bytesEstimated)*100 ))
+        percText = "Runways has been downloaded succesfully."
+    end	
+
+end
+	
 
 local function changeScenes()
     composer.gotoScene( "menu", {effect = "slideRight", time = 500} )
     print("Scene --> Airport Data")
 end
 
-
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
 
--- create()
+-- Create the Airports page
+
 function scene:create( event )
 
     local sceneGroup = self.view
-    -- Code here runs when the scene is first created but has not yet appeared on screen
+    
+	-- Code here runs when the scene is first created but has not yet appeared on screen
     bg = display.newRect( dwidthC, dheighC, dwidth, dheigh )
-    bg:setFillColor(0.7,0.6,0.5)
+    bg:setFillColor(0.5,0.6,0.5)
     sceneGroup:insert(bg)
-    --App title
-    title = display.newText( "AIRPORT DATA", dwidthC, dheighC * 0.075, native.newFont( "Helvetica" ,40 ))
+    
+	-- Page title
+    
+	title = display.newText( "AIRPORTS DATA", dwidthC, dheighC * 0.09, native.newFont( "Helvetica" ,40 ))
     sceneGroup:insert(title)
 
-    local sourceTextOpt = {text = "Airport Information is courtesy of OurAirports.com",
+    -- Page footer
+	
+	local sourceTextOpt = {text = "Airport Information is courtesy of OurAirports.com",
         x = dwidthC,
-        y = dheigh * 0.9,
-        width = dwidth*0.65,
+        y = dheigh * 0.95,
+        width = dwidth * 0.65,
         font = native.systemFont,
         fontSize = 16,
         align = "center"
     }
+	
     local sourceText = display.newText( sourceTextOpt )
     sceneGroup:insert(sourceText)
 
     ----------------------------------------------------------------------------------------------------------------------------
-    -- time display
+    -- Display Time
     ----------------------------------------------------------------------------------------------------------------------------
-    --Create a new text to display the time
-    local UTC_time = display.newText( "", dwidthC, dheighC * 0.15)
+    
+	-- Create a new text to display the time
+    
+	local UTC_time = display.newText( "", dwidthC, dheighC * 0.2)
     sceneGroup:insert(UTC_time)
-    local function updateClock(e)       --Use this function to update the clock
+    
+	-- This function updates the clock
+	local function updateClock(e)       
 
         local hourUTC = tonumber( os.date("!%H"))
-        --if hourUTC < 0 then hourUTC = hourUTC + 24 end
-        --Put the values to the UTC_time text
-        UTC_time.text = string.format( "TIME NOW: %02d:%sZ / %s:%s Local", hourUTC, os.date("%M"),os.date("%H"),os.date("%M"))
+        -- If hourUTC < 0 then hourUTC = hourUTC + 24 end
+        -- Put the values to the UTC_time text
+        UTC_time.text = string.format( "Current Time: %02d:%s Z / %s:%s Local", hourUTC, os.date("%M"),os.date("%H"),os.date("%M"))
 
     end
 
@@ -125,10 +172,14 @@ function scene:create( event )
     timer.performWithDelay( 1000, updateClock, 0 )
 
     ----------------------------------------------------------------------------------------------------------------------------
-    --Download button and such...
+    -- Download buttons & proccess
     ----------------------------------------------------------------------------------------------------------------------------
-    local function onDownloadAirport ( event )
-        if (event.action == "clicked") then
+
+-- Download files function
+
+	local function onDownloadAirport ( event )
+		
+		if (event.action == "clicked") then
             local i = event.index
             if (i == 2) then
 
@@ -143,17 +194,21 @@ function scene:create( event )
 
                 -- Tell network.request() that we want the output to go to a file:
                 params.response = {
-                    filename = "airport.txt",
+                    filename = "aviator_airports.txt",
                     baseDirectory = system.DocumentsDirectory
                 }
 
-                network.request( urlAirports, "GET", networkListener,  params )
-
+                network.request( urlAirports, "GET", networkListener_a,  params )
+				
+				-- Set parameter to hide download button
+				hideButton = 1
             end
+			
         end
-
+			
+		-- Same process for the 2nd file.
         if (event.action == "clicked") then
-            local i = event.index
+	        local i = event.index
             if (i == 2) then
 
             elseif ( i == 1 ) then
@@ -167,81 +222,64 @@ function scene:create( event )
 
                 -- Tell network.request() that we want the output to go to a file:
                 params.response = {
-                    filename = "runways.txt",
+                    filename = "aviator_runways.txt",
                     baseDirectory = system.DocumentsDirectory
                 }
 
-                network.request( urlRunways, "GET", networkListener,  params )
-
+                network.request( urlRunways, "GET", networkListener_r,  params )
+								
             end
         end
 
     end
 
+	-- Message box function to confirm download
+	local function popRequest ()
+        local downAlert = native.showAlert( "Airport Data", "It is needed to download Airports & Runways data files (about 10 MB). Press Download to proceed." , 
+		{ "Download", "Cancel"}, onDownloadAirport )
 
-
-
-    local function popRequest ()
-        local downAlert = native.showAlert( "Airport Data", "Do you want to download Airport data file (~ 8 MB)?" , { "Download", "Cancel"}, onDownloadAirport )
     end
 
-    local dataDown = display.newRoundedRect( dwidthC, dheighC * 0.25, dwidth * 0.5, dheigh * 0.05, 15 )
+	-- Button 
+    local dataDown = display.newRoundedRect( dwidthC, dheighC * 0.35, dwidth * 0.5, dheigh * 0.05, 15 )
         dataDown:setFillColor(0.5,0.5,1)
         dataDown:addEventListener("tap", popRequest)
-    sceneGroup:insert(dataDown)
+	sceneGroup:insert(dataDown)
 
-    local dataDownLabel = display.newText( "GET AIRPORT DATA", dwidthC, dheighC * 0.25, native.newFont( "Helvetica" , 22 ))
+	-- Button label
+    local dataDownLabel = display.newText( "Download Airport Data", dwidthC, dheighC * 0.35, native.newFont( "Helvetica" , 22 ))
     sceneGroup:insert(dataDownLabel)
 
-    local displayArptData = display.newText( arptDataIs, dwidthC, dheighC * 1.1, display.actualContentWidth*0.8,
-        display.actualContentHeight*0.4, native.systemFont,22)
+    -- Display airport data
+	local displayArptData = display.newText( arptDataIs, dwidthC, dheighC * 1.1, display.actualContentWidth * 0.8,
+        display.actualContentHeight * 0.4, native.systemFont,22)
     sceneGroup:insert(displayArptData)
 
-
-    ----------------------------------------------------------------------------------------------------------------------------
-    --Download Bar
-    ----------------------------------------------------------------------------------------------------------------------------
-
-    local downPerc = display.newText( "", dwidthC, dheigh * 0.18, native.newFont( "Helvetica" ,20 ) )
+	-- Display download process
+	local downPerc = display.newText( "", dwidthC, dheigh * 0.18, native.newFont( "Helvetica" ,20 ) )
     sceneGroup:insert(downPerc)
-
-    local function downloadPerc(e)
+		    
+	local function downloadPerc()
         downPerc.text = percText
-    end
-    timer.performWithDelay( 250, downloadPerc, 0 )
-
-    local function downProgBar(e)
-        if percDown == nil then percDown = 0 end
-        if percText ~= "Download finished" then
-            local progrBar = display.newRect(dwidthC * 0.4, dheigh * 0.21,
-                dwidth * 0.6 * percDown, dheigh * 0.022)
-            progrBar.anchorX = 0
-            progrBar:setFillColor(1,0,0)
-            sceneGroup:insert(progrBar)
-        else
-            local progrBar = display.newRect(dwidthC * 0.4, dheigh * 0.21,
-                dwidth * 0.6, dheigh * 0.022)
-            progrBar.anchorX = 0
-            progrBar:setFillColor(0,1,0)
-            sceneGroup:insert(progrBar)
-        end
-
-    end
-
-    timer.performWithDelay( 250, downProgBar, 0 )
-
-
+	end
+	
+	local function hideButtons(staus)
+		if hideButton == 1 then
+			dataDown.alpha = 0
+			dataDownLabel.alpha = 0
+		end
+	end
+	
+	timer.performWithDelay( 300, hideButtons, 0 )
+	timer.performWithDelay( 600, downloadPerc, 0 )
+	
     ----------------------------------------------------------------------------------------------------------------------------
     --Get airport ID
     ----------------------------------------------------------------------------------------------------------------------------
+	
     local icaoID = display.newText("Enter Airport's ICAO code", dwidthC, dheighC * 0.5,
                     native.newFont( "Helvetica" ,25 ))
     sceneGroup:insert(icaoID)
-
-
-
-
-
 
 
     local function arptIDListener( event )
@@ -256,7 +294,7 @@ function scene:create( event )
             ----------------------------------------------------------------------------------------------------------------------------
             --Read airport file.
             ----------------------------------------------------------------------------------------------------------------------------
-            local airportPath = system.pathForFile("airport.txt", system.DocumentsDirectory)
+            local airportPath = system.pathForFile("aviator_airports.txt", system.DocumentsDirectory)
 
             local airportfile = io.open( airportPath, "r" )
 
@@ -267,6 +305,7 @@ function scene:create( event )
                 if not airportfilecontent_a then airportfilecontent_a = "Airport not found"
                     print("Airport DATA N/A")
                 end --if not content_a
+
                 arptDataIs = string.sub(airportfilecontent_a, 1, -2)
                 print(arptDataIs)
 
@@ -281,36 +320,39 @@ function scene:create( event )
             ----------------------------------------------------------------------------------------------------------------------------
             --Read runway file.
             ----------------------------------------------------------------------------------------------------------------------------
-            local rwyPath = system.pathForFile("runways.txt", system.DocumentsDirectory)
+            local rwyPath = system.pathForFile("aviator_runways.txt", system.DocumentsDirectory)
 
             local rwyfile = io.open( rwyPath, "r" )
 
-            if not rwyfile then print("Airport file error" )
+            if not rwyfile then print("There ia a problem with Runways file." )
             else
                 local rwyfilecontent = rwyfile:read'*a'
-                local rwyfilecontent_a = string.match( rwyfilecontent, string.upper(arptID.text) .. ".-\n" )
-                if not rwyfilecontent_a then rwyfilecontent_a = "Airport not found"
-                    print("Airport DATA N/A")
+                
+				if not rwyfilecontent_a then rwyfilecontent_a = "Airport not found"
+                    print("Airport DATA Not Available")
                 end --if not content_a
-                rwyDataIs = string.sub(rwyfilecontent_a, 1, -2)
-                print(rwyDataIs)
-
-                rwyData = rwyfilecontent_a:split(",")
-                for i=1, #rwyData do
-                    print(rwyData[i])
+				
+				local rwyfilecontent_a = string.match( rwyfilecontent, string.upper(arptID.text) .. ".-\n" )
+				rwyDataIs = string.sub(rwyfilecontent_a, 1, -2)
+				print(rwyDataIs)
+				
+				rwyData = rwyfilecontent_a:split(",")
+				
+				for i=1, #rwyData do
+					print(rwyData[i])
                 end
 
                 rwyfile:close()
+				
                 local i = 0
                 local tf = {}
                 while true do
                      i = string.find(rwyfilecontent, string.upper(arptID.text), i+1)
                     if i == nil then break end
-                   table.insert(tf, i)
+					table.insert(tf, i)
                     print("Found at " .. i)
                 end
                 print(#tf)
-
 
 
             end --if not airportfile
@@ -330,13 +372,13 @@ function scene:create( event )
             string.format("Elevetion: %d ft\n", arptData[6]) ..             --Arpt Elevetion
             string.format("Latitude: %s%8.6f\n", NorthSouth, arptData[4]) ..              --Arpt Lat
             string.format("Longitude: %s%010.6f\n", EastWest, math.abs(arptData[5])) ..             --Arpt Long
-            "\nRUNWAYS\n" ..                                                --Runways header
-            string.sub(rwyData[7], 2, -2) .. "/" .. string.sub(rwyData[13], 2, -2) ..": " ..
-            "HDG: " .. rwyData[11] .. "/" .. rwyData[17] .. ", Length: " .. rwyData[2] .. ", " ..
-            string.sub(rwyData[4], 2, -2)
+            
+			"\nRUNWAYS\n" ..                                                --Runways header
+			string.sub(rwyData[7], 2, -2) .. "/" .. string.sub(rwyData[13], 2, -2) ..": " ..
+			"HDG: " .. rwyData[11] .. "/" .. rwyData[17] .. ", Length: " .. rwyData[2] .. ", " ..
+			string.sub(rwyData[4], 2, -2) .. "\n\n" 
+			
         end
-
-
 
 
         elseif ( event.phase == "editing" ) then
@@ -344,46 +386,30 @@ function scene:create( event )
             print( event.oldText )
             print( event.startPosition )
             print( event.text )
-
         end
     end
-    ----Airport METAR
+    
+	-- Create Airport Textbox
     arptID = native.newTextField( dwidthC, dheighC * 0.60, 100, 40 )
     arptID:addEventListener( "userInput", arptIDListener )
     sceneGroup:insert(arptID)
 
-
-
-
-
-
-
-
-
-
-
-
     ----------------------------------------------------------------------------------------------------------------------------
     --Bottom button to return to main menu.
     ----------------------------------------------------------------------------------------------------------------------------
-    buttonMenu = display.newRoundedRect(dwidthC, dheighC*1.9,
-        dwidth*0.4, dheigh*0.05, 15)
+    buttonMenu = display.newRoundedRect(dwidthC, dheighC * 1.8, dwidth * 0.4, dheigh * 0.05, 15)
     buttonMenu:setFillColor(0,0,1)
     sceneGroup:insert(buttonMenu)
     buttonMenu:addEventListener("tap", changeScenes)
 
-    local buttonMenuLabel = display.newText( "Return to Menu",  dwidthC, dheighC*1.9,
-            native.newFont( "Helvetica" ,25 ))
+    local buttonMenuLabel = display.newText( "Return to Menu",  dwidthC, dheighC * 1.8, native.newFont( "Helvetica" ,25 ))
     sceneGroup:insert(buttonMenuLabel)
-
-
-
-
-
 
 end	--scene:create
 
-
+    ----------------------------------------------------------------------------------------------------------------------------
+    -- General scene functions
+    ----------------------------------------------------------------------------------------------------------------------------
 -- show()
 function scene:show( event )
 
