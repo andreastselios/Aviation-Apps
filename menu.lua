@@ -37,7 +37,7 @@ end
 
 local function gotoAirportData()
 composer.gotoScene( "airportData", {effect = "slideLeft", time = 500} )
-print("Scene --> gotoAirportData")
+print("Scene --> AirportData")
 end
 
 local function openWiki()
@@ -48,6 +48,9 @@ local function openTselios()
 	system.openURL( "https://tselios.com" )
 end
 
+local function exitApp()
+	native.requestExit()
+end
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -66,12 +69,12 @@ function scene:create( event )
 	local itx_tselios = display.newImage( "assets/logo2.png" , display.contentCenterX, display.contentHeight * 0.85)
 	sceneGroup:insert(itx_tselios)
 	itx_tselios:addEventListener("tap", openTselios)
-	title = display.newText("Aviators's Companion", display.contentCenterX, display.contentHeight * 0.075,native.newFont( "/fonts/Lost_Rock_.otf" , 50 ))
+	title = display.newText("Aviators's Companion", display.contentCenterX, display.contentHeight * 0.075,native.newFont( "Lost_Rock_.otf" , 50 ))
 	title:setFillColor(1,1,1)
 	sceneGroup:insert(title)
 
 	--------------------------------------------------------------------------------
-	--Button Weather
+	-- Button Weather
 	--------------------------------------------------------------------------------
 	local buttWeather = display.newImageRect( buttImageSheet, 1, display.contentWidth * 0.25, display.contentWidth * 0.25)
 	buttWeather.x = display.contentWidth * 0.25
@@ -80,7 +83,7 @@ function scene:create( event )
 	buttWeather:addEventListener("tap", gotoWeather)
 
 	--------------------------------------------------------------------------------
-	--Button Conversions
+	-- Button Conversions
 	--------------------------------------------------------------------------------
 	local buttConv = display.newImageRect( buttImageSheet, 2 , display.contentWidth * 0.25, display.contentWidth * 0.25)
 	buttConv.x = display.contentWidth * 0.75
@@ -98,7 +101,7 @@ function scene:create( event )
 	buttCompute:addEventListener("tap", gotoComputations)
 	
 	--------------------------------------------------------------------------------
-	--Button Airport Data
+	-- Button Airport Data
 	--------------------------------------------------------------------------------
 	local buttairData = display.newImageRect( buttImageSheet, 4 , display.contentWidth * 0.25, display.contentWidth * 0.25)
 	buttairData.x = display.contentWidth * 0.75
@@ -107,17 +110,29 @@ function scene:create( event )
 	buttairData:addEventListener("tap", gotoAirportData)
 
 	--------------------------------------------------------------------------------
-	--Button Manual
+	-- Button Manual
 	--------------------------------------------------------------------------------
 	buttonManual = display.newRoundedRect(display.contentCenterX, display.contentHeight * 0.95, display.contentWidth * 0.30, display.contentHeight * 0.03, 15 )
 	buttonManual:setFillColor(0.3,0.8,0.9)
 	sceneGroup:insert(buttonManual)
 
-	buttonManualLabel = display.newText( "Read Manual",  display.contentCenterX, display.contentHeight * 0.95, native.newFont( "/fonts/Helvetica-Oblique.ttf" ,20 ))
+	buttonManualLabel = display.newText( "Read Manual",  display.contentCenterX, display.contentHeight * 0.95, native.newFont( "FallingSkyBd.otf" ,20 ))
 	buttonManualLabel:setFillColor(0,0,0)
 	sceneGroup:insert(buttonManualLabel)
 	buttonManualLabel:addEventListener("tap", openWiki)
 
+
+	--------------------------------------------------------------------------------
+	-- Button Exit
+	--------------------------------------------------------------------------------
+	buttonExit = display.newRoundedRect(display.contentCenterX, display.contentHeight * 0.65, display.contentWidth * 0.30, display.contentHeight * 0.03, 15 )
+	buttonExit:setFillColor(0.3,0.8,0.9)
+	sceneGroup:insert(buttonExit)
+
+	buttonExitLabel = display.newText( "Exit",  display.contentCenterX, display.contentHeight * 0.65, native.newFont( "FallingSkyBd.otf" ,20 ))
+	buttonExitLabel:setFillColor(0,0,0)
+	sceneGroup:insert(buttonExitLabel)
+	buttonExitLabel:addEventListener("tap", exitApp)
 	--------------------------------------------------------------------------------
 	-- Bottom warning message
 	--------------------------------------------------------------------------------
@@ -127,7 +142,7 @@ function scene:create( event )
 
 end --scene:create( event )
 
-
+	
 -- show()
 function scene:show( event )
 
