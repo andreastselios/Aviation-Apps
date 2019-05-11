@@ -110,11 +110,17 @@ local function networkListener_r( event )
 end
 	
 
-local function changeScenes()
-    composer.gotoScene( "menu", {effect = "slideRight", time = 500} )
-    print("Scene --> Airport Data")
+function scene:key(event)
+
+    if ( event.keyName == "back" or event.keyName == "unknown") then
+
+          composer.gotoScene( "menu", {effect = "slideRight", time = 500} )
+		  return true
+		  --print("Remove Scene --> Airport Data but do not exit")
+    end
 end
 
+Runtime:addEventListener( "key", scene )
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -132,7 +138,7 @@ function scene:create( event )
     
 	-- Page title
     
-	title = display.newText( "AIRPORTS DATA", dwidthC, dheighC * 0.09, native.newFont( "Helvetica" ,40 ))
+	title = display.newText( "Airports Data", dwidthC, dheighC * 0.09, native.newFont( "FallingSkyBd.otf" ,40 ))
     sceneGroup:insert(title)
 
     -- Page footer
@@ -141,8 +147,8 @@ function scene:create( event )
         x = dwidthC,
         y = dheigh * 0.95,
         width = dwidth * 0.65,
-        font = native.systemFont,
-        fontSize = 16,
+        font = "FallingSkyExt.otf",
+        fontSize = 20,
         align = "center"
     }
 	
@@ -155,7 +161,7 @@ function scene:create( event )
     
 	-- Create a new text to display the time
     
-	local UTC_time = display.newText( "", dwidthC, dheighC * 0.2)
+	local UTC_time = display.newText( "", dwidthC, dheighC * 0.2, native.newFont( "FallingSky.otf" , 24 ))
     sceneGroup:insert(UTC_time)
     
 	-- This function updates the clock
@@ -237,7 +243,6 @@ function scene:create( event )
 	local function popRequest ()
         local downAlert = native.showAlert( "Airport Data", "It is needed to download Airports & Runways data files (about 10 MB). Press Download to proceed." , 
 		{ "Download", "Cancel"}, onDownloadAirport )
-
     end
 
 	-- Button 
@@ -247,7 +252,7 @@ function scene:create( event )
 	sceneGroup:insert(dataDown)
 
 	-- Button label
-    local dataDownLabel = display.newText( "Download Airport Data", dwidthC, dheighC * 0.35, native.newFont( "Helvetica" , 22 ))
+    local dataDownLabel = display.newText( "Download Airport Data", dwidthC, dheighC * 0.35, native.newFont( "FallingSkyBd" , 22 ))
     sceneGroup:insert(dataDownLabel)
 
     -- Display airport data
@@ -256,7 +261,7 @@ function scene:create( event )
     sceneGroup:insert(displayArptData)
 
 	-- Display download process
-	local downPerc = display.newText( "", dwidthC, dheigh * 0.18, native.newFont( "Helvetica" ,20 ) )
+	local downPerc = display.newText( "", dwidthC, dheigh * 0.18, native.newFont( "FallingSkyBd" ,20 ) )
     sceneGroup:insert(downPerc)
 		    
 	local function downloadPerc()
@@ -274,13 +279,11 @@ function scene:create( event )
 	timer.performWithDelay( 600, downloadPerc, 0 )
 	
     ----------------------------------------------------------------------------------------------------------------------------
-    --Get airport ID
+    -- Get airport ID
     ----------------------------------------------------------------------------------------------------------------------------
 	
-    local icaoID = display.newText("Enter Airport's ICAO code", dwidthC, dheighC * 0.5,
-                    native.newFont( "Helvetica" ,25 ))
+    local icaoID = display.newText("Enter Airport's ICAO code", dwidthC, dheighC * 0.5, native.newFont( "FallingSkyBd" ,25 ))
     sceneGroup:insert(icaoID)
-
 
     local function arptIDListener( event )
 
@@ -292,20 +295,21 @@ function scene:create( event )
             keyFocus = 1
             print("focus is "..keyFocus)
             ----------------------------------------------------------------------------------------------------------------------------
-            --Read airport file.
+            -- Read airport file.
             ----------------------------------------------------------------------------------------------------------------------------
             local airportPath = system.pathForFile("aviator_airports.txt", system.DocumentsDirectory)
 
             local airportfile = io.open( airportPath, "r" )
 
-            if not airportfile then print("Airport file error" )
+            if not airportfile then print("There ia a problem with Airports file." )
             else
-                local airportfilecontent = airportfile:read'*a'
+				local airportfilecontent = airportfile:read'*a'
                 local airportfilecontent_a = string.match( airportfilecontent, string.upper(arptID.text) .. ".-\n" )
-                if not airportfilecontent_a then airportfilecontent_a = "Airport not found"
-                    print("Airport DATA N/A")
-                end --if not content_a
-
+                
+				if not airportfilecontent_a then airportfilecontent_a = "Airport not found"
+                    print("Airport DATA Not Available")
+                end
+				
                 arptDataIs = string.sub(airportfilecontent_a, 1, -2)
                 print(arptDataIs)
 
@@ -315,10 +319,10 @@ function scene:create( event )
                 end
 
                 airportfile:close()
-            end --if not airportfile
+            end
 
             ----------------------------------------------------------------------------------------------------------------------------
-            --Read runway file.
+            -- Read runway file.
             ----------------------------------------------------------------------------------------------------------------------------
             local rwyPath = system.pathForFile("aviator_runways.txt", system.DocumentsDirectory)
 
@@ -327,39 +331,41 @@ function scene:create( event )
             if not rwyfile then print("There ia a problem with Runways file." )
             else
                 local rwyfilecontent = rwyfile:read'*a'
-                
-				if not rwyfilecontent_a then rwyfilecontent_a = "Airport not found"
-                    print("Airport DATA Not Available")
-                end --if not content_a
+                local rwyfilecontent_a = string.match( rwyfilecontent, string.upper(arptID.text) .. ".-\n" )
 				
-				local rwyfilecontent_a = string.match( rwyfilecontent, string.upper(arptID.text) .. ".-\n" )
-				rwyDataIs = string.sub(rwyfilecontent_a, 1, -2)
-				print(rwyDataIs)
+				if not rwyfilecontent_a then rwyfilecontent_a = "Airport's runways not found"
+                    print("Runways DATA Not Available")
+                end 
+				
+				rwyData = string.sub(rwyfilecontent_a, 1, -2)
+				print(rwyDataIs .. " $")
 				
 				rwyData = rwyfilecontent_a:split(",")
-				
 				for i=1, #rwyData do
 					print(rwyData[i])
-                end
-
-                rwyfile:close()
-				
-                local i = 0
-                local tf = {}
-                while true do
-                     i = string.find(rwyfilecontent, string.upper(arptID.text), i+1)
-                    if i == nil then break end
+				end
+								
+				rwyfile:close()
+					
+				local i = 0
+				local tf = {}
+				while true do
+					i = string.find(rwyfilecontent, string.upper(arptID.text), i+1)
+					if i == nil then break end
 					table.insert(tf, i)
-                    print("Found at " .. i)
-                end
-                print(#tf)
-
-
-            end --if not airportfile
-
-        if #arptData < 2 or #arptID.text < 4 then
+					print("Found at " .. i)
+				end
+				print(#tf)
+				
+            end
+	
+		----------------------------------------------------------------------------------------------------------------------------
+		-- Create output strings
+		----------------------------------------------------------------------------------------------------------------------------
+        				
+		if #arptData < 2 or #arptID.text < 4 then
             displayArptData.text = "Airport Not Found.\nPlease make sure that you have enetered a valid ICAO code."
-
+			
         else
 
             if tonumber(arptData[4]) >= 0 then NorthSouth = "N" else NorthSouth = "S" end
@@ -372,12 +378,13 @@ function scene:create( event )
             string.format("Elevetion: %d ft\n", arptData[6]) ..             --Arpt Elevetion
             string.format("Latitude: %s%8.6f\n", NorthSouth, arptData[4]) ..              --Arpt Lat
             string.format("Longitude: %s%010.6f\n", EastWest, math.abs(arptData[5])) ..             --Arpt Long
-            
+            -- (insert link to website) string.sub(arptData[15],1, -2) ..
 			"\nRUNWAYS\n" ..                                                --Runways header
 			string.sub(rwyData[7], 2, -2) .. "/" .. string.sub(rwyData[13], 2, -2) ..": " ..
 			"HDG: " .. rwyData[11] .. "/" .. rwyData[17] .. ", Length: " .. rwyData[2] .. ", " ..
 			string.sub(rwyData[4], 2, -2) .. "\n\n" 
 			
+			--------displayArptData.font = native.newFont( "FallingSky.otf" , 40 ) 
         end
 
 
@@ -389,27 +396,22 @@ function scene:create( event )
         end
     end
     
+	
 	-- Create Airport Textbox
-    arptID = native.newTextField( dwidthC, dheighC * 0.60, 100, 40 )
-    arptID:addEventListener( "userInput", arptIDListener )
+    arptID = native.newTextField( dwidthC, dheighC * 0.60, 105, 40 )
+	arptID.font = native.newFont( "FallingSky.otf" , 24 ) 
+	arptID:resizeHeightToFitFont()
+	arptID.align = "center"
+	arptID:setTextColor( 0.5, 0.5, 0.5 )
+	arptID:addEventListener( "userInput", arptIDListener )
     sceneGroup:insert(arptID)
-
-    ----------------------------------------------------------------------------------------------------------------------------
-    --Bottom button to return to main menu.
-    ----------------------------------------------------------------------------------------------------------------------------
-    buttonMenu = display.newRoundedRect(dwidthC, dheighC * 1.8, dwidth * 0.4, dheigh * 0.05, 15)
-    buttonMenu:setFillColor(0,0,1)
-    sceneGroup:insert(buttonMenu)
-    buttonMenu:addEventListener("tap", changeScenes)
-
-    local buttonMenuLabel = display.newText( "Return to Menu",  dwidthC, dheighC * 1.8, native.newFont( "Helvetica" ,25 ))
-    sceneGroup:insert(buttonMenuLabel)
 
 end	--scene:create
 
     ----------------------------------------------------------------------------------------------------------------------------
     -- General scene functions
     ----------------------------------------------------------------------------------------------------------------------------
+
 -- show()
 function scene:show( event )
 
@@ -434,8 +436,8 @@ function scene:hide( event )
 
     if ( phase == "will" ) then
         -- Code here runs when the scene is on screen (but is about to go off screen)
-        composer.removeScene("conversions")
-        print("Scene conversions removed")
+        composer.removeScene("AirportsData")
+        print("Scene Airport Data removed")
     elseif ( phase == "did" ) then
         -- Code here runs immediately after the scene goes entirely off screen
 
