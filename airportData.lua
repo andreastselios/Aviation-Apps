@@ -109,18 +109,19 @@ local function networkListener_r( event )
 
 end
 	
+-- Use phone's back button to go back to main menu.
 
 function scene:key(event)
 
-    if ( event.keyName == "back" or event.keyName == "unknown") then
+	if ( event.keyName == "back" or event.keyName == "unknown") then
+		composer.gotoScene( "menu", {effect = "slideRight", time = 500} )
+		return true
+	end
 
-          composer.gotoScene( "menu", {effect = "slideRight", time = 500} )
-		  return true
-		  --print("Remove Scene --> Airport Data but do not exit")
-    end
 end
 
 Runtime:addEventListener( "key", scene )
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -129,16 +130,15 @@ Runtime:addEventListener( "key", scene )
 
 function scene:create( event )
 
-    local sceneGroup = self.view
+	local sceneGroup = self.view
     
-	-- Code here runs when the scene is first created but has not yet appeared on screen
+	-- Background color
     bg = display.newRect( dwidthC, dheighC, dwidth, dheigh )
     bg:setFillColor(0.5,0.6,0.5)
     sceneGroup:insert(bg)
     
 	-- Page title
-    
-	title = display.newText( "Airports Data", dwidthC, dheighC * 0.09, native.newFont( "FallingSkyBd.otf" ,40 ))
+    title = display.newText( "Airports Data", dwidthC, dheighC * 0.09, native.newFont( "FallingSkyBd.otf" ,40 ))
     sceneGroup:insert(title)
 
     -- Page footer
@@ -408,9 +408,9 @@ function scene:create( event )
 
 end	--scene:create
 
-    ----------------------------------------------------------------------------------------------------------------------------
-    -- General scene functions
-    ----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+-- General scene functions
+----------------------------------------------------------------------------------------------------------------------------
 
 -- show()
 function scene:show( event )
